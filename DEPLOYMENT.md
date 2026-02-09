@@ -157,39 +157,33 @@ Exports flow records for traffic analysis:
 
 ---
 
-## ☁️ Render Deployment (Recommended Free Tier)
+## ☁️ Fly.io (Backend) + Netlify (Frontend)
 
-This deploys the **backend (Go API)** on Render. The **frontend** is created as a Static Site directly in Render.
+This is the recommended deployment: **Fly.io for backend**, **Netlify for frontend**.
 
-### 1. Push repository to GitHub
-Render connects to your GitHub repo.
+### 1. Backend on Fly.io
+From the repo root:
 
-### 2. Create backend from render.yaml
-In Render Dashboard:
-- New → **Blueprint** → select your repo
-- Render will detect [render.yaml](render.yaml) and create:
-  - `antrea-netmonitor-backend`
+```bash
+cd backend
+fly launch --name antrea-netmonitor-backend --region sin --no-deploy
+fly deploy
+```
 
-### 3. Create frontend as Static Site
-In Render Dashboard:
-- New → **Static Site** → select your repo
-- Root Directory: `frontend`
-- Build Command: `npm install && npm run build`
-- Publish Directory: `dist`
+Confirm health:
+`https://YOUR-FLY-APP.fly.dev/health`
 
-### 4. Set frontend API URL
-After the backend is created, copy its public URL and update the frontend env:
+### 2. Frontend on Netlify
+In Netlify:
+- New site from Git → select repo
+- Base directory: `frontend`
+- Build command: `npm install && npm run build`
+- Publish directory: `dist`
+- Env var: `VITE_API_URL=https://YOUR-FLY-APP.fly.dev`
 
-- Render → `antrea-netmonitor-frontend` → Environment
-- Set:
-  - `VITE_API_URL=https://YOUR-BACKEND.onrender.com`
-- Trigger a redeploy
-
-### 5. Verify
-- Backend: `https://YOUR-BACKEND.onrender.com/health`
-- Frontend: `https://YOUR-FRONTEND.onrender.com`
-
-> Note: Free Render services may sleep when idle. First request can be slower.
+### 3. Verify
+- Backend: `https://YOUR-FLY-APP.fly.dev/health`
+- Frontend: `https://YOUR-NETLIFY-SITE.netlify.app`
 
 ---
 

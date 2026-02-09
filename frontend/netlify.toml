@@ -1,0 +1,12 @@
+[build]
+  base = "frontend"
+  publish = "dist"
+  command = "npm install && npm run build"
+
+[build.environment]
+  VITE_API_URL = "https://REPLACE_WITH_BACKEND_URL"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
