@@ -2,7 +2,6 @@ services:
   - type: web
     name: antrea-netmonitor-backend
     env: go
-    plan: free
     rootDir: backend
     buildCommand: go build -o bin/server ./cmd/server
     startCommand: PORT=8080 ./bin/server
@@ -13,7 +12,6 @@ services:
   - type: web
     name: antrea-netmonitor-frontend
     env: static
-    plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
