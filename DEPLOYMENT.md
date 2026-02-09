@@ -159,27 +159,33 @@ Exports flow records for traffic analysis:
 
 ## ☁️ Render Deployment (Recommended Free Tier)
 
-This deploys **backend (Go API)** and **frontend (Vite static)** on Render.
+This deploys the **backend (Go API)** on Render. The **frontend** is created as a Static Site directly in Render.
 
 ### 1. Push repository to GitHub
 Render connects to your GitHub repo.
 
-### 2. Create services from render.yaml
+### 2. Create backend from render.yaml
 In Render Dashboard:
 - New → **Blueprint** → select your repo
 - Render will detect [render.yaml](render.yaml) and create:
-  - `network-monitor-backend`
-  - `network-monitor-frontend`
+  - `antrea-netmonitor-backend`
 
-### 3. Set frontend API URL
+### 3. Create frontend as Static Site
+In Render Dashboard:
+- New → **Static Site** → select your repo
+- Root Directory: `frontend`
+- Build Command: `npm install && npm run build`
+- Publish Directory: `dist`
+
+### 4. Set frontend API URL
 After the backend is created, copy its public URL and update the frontend env:
 
-- Render → `network-monitor-frontend` → Environment
+- Render → `antrea-netmonitor-frontend` → Environment
 - Set:
   - `VITE_API_URL=https://YOUR-BACKEND.onrender.com`
 - Trigger a redeploy
 
-### 4. Verify
+### 5. Verify
 - Backend: `https://YOUR-BACKEND.onrender.com/health`
 - Frontend: `https://YOUR-FRONTEND.onrender.com`
 

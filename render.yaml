@@ -9,12 +9,3 @@ services:
     envVars:
       - key: CAPTURE_MODE
         value: mock
-  - type: web
-    name: antrea-netmonitor-frontend
-    env: node
-    rootDir: frontend
-    buildCommand: npm install && npm run build
-    startCommand: npx serve -s dist -l $PORT
-    envVars:
-      - key: VITE_API_URL
-        value: https://REPLACE_WITH_BACKEND_URL
