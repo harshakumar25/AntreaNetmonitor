@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: antrea-netmonitor-backend
+    env: go
+    plan: free
+    rootDir: backend
+    buildCommand: go build -o bin/server ./cmd/server
+    startCommand: PORT=8080 ./bin/server
+    healthCheckPath: /health
+    envVars:
+      - key: CAPTURE_MODE
+        value: mock
+  - type: static
+    name: antrea-netmonitor-frontend
+    env: static
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://REPLACE_WITH_BACKEND_URL

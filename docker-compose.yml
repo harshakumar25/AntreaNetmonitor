@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: netmonitor-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - GO_ENV=development
+      - LOG_LEVEL=debug
+      # Set to "antrea" when running in Kubernetes with Antrea
+      # Set to "mock" for local development with simulated data
+      - CAPTURE_MODE=${CAPTURE_MODE:-mock}
+      - ANTREA_AGENT_ADDR=${ANTREA_AGENT_ADDR:-http://localhost:10350}
+      - FLOW_AGGREGATOR_ADDR=${FLOW_AGGREGATOR_ADDR:-http://localhost:4739}
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - netmonitor
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: netmonitor-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - netmonitor
+    restart: unless-stopped
+
+  # Optional: Prometheus for metrics
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: netmonitor-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+    networks:
+      - netmonitor
+    restart: unless-stopped
+
+  # Optional: Grafana for visualization
+  grafana:
+    image: grafana/grafana:10.2.2
+    container_name: netmonitor-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+    networks:
+      - netmonitor
+    restart: unless-stopped
+
+networks:
+  netmonitor:
+    driver: bridge
+
+volumes:
+  prometheus-data:
+  grafana-data:

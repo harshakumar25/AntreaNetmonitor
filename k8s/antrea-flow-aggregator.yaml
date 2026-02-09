@@ -1,0 +1,53 @@
+# Antrea Flow Aggregator Configuration
+# Deploy this to enable advanced flow analytics
+# Reference: https://antrea.io/docs/v1.7.0/docs/network-flow-visibility/
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: flow-aggregator
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flow-aggregator-config
+  namespace: flow-aggregator
+data:
+  flow-aggregator.conf: |
+    # Enable flow collection from Antrea agents
+    flowCollector:
+      enable: true
+      address: "0.0.0.0:4739"
+      protocol: "tls"
+    
+    # Export to ClickHouse for storage (optional)
+    clickHouse:
+      enable: false
+      database: "default"
+      databaseUrl: "tcp://clickhouse-clickhouse.flow-visibility.svc:9000"
+    
+    # Export flows to our network monitor
+    flowLogger:
+      enable: true
+      path: "/var/log/antrea/flow-aggregator"
+    
+    # Record TTL
+    inactiveFlowRecordTimeout: "60s"
+    activeFlowRecordTimeout: "3600s"
+---
+# Network Monitor can query Flow Aggregator API
+apiVersion: v1
+kind: Service
+metadata:
+  name: flow-aggregator-api
+  namespace: flow-aggregator
+spec:
+  selector:
+    app: flow-aggregator
+  ports:
+    - name: api
+      port: 4739
+      targetPort: 4739
+    - name: http
+      port: 8080
+      targetPort: 8080

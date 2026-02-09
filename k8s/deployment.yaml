@@ -1,0 +1,110 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: network-monitor-backend
+  labels:
+    app: network-monitor
+    component: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: network-monitor
+      component: backend
+  template:
+    metadata:
+      labels:
+        app: network-monitor
+        component: backend
+    spec:
+      serviceAccountName: network-monitor
+      containers:
+        - name: backend
+          image: network-monitor-backend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: PORT
+              value: "8080"
+            - name: GO_ENV
+              value: "production"
+            # Use mock mode for demo (set to "antrea" when antctl is available in container)
+            - name: CAPTURE_MODE
+              value: "mock"
+            - name: ANTREA_AGENT_ADDR
+              value: "http://antrea-agent.kube-system:10350"
+            - name: FLOW_AGGREGATOR_ADDR
+              value: "http://flow-aggregator.flow-aggregator:4739"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: network-monitor-frontend
+  labels:
+    app: network-monitor
+    component: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: network-monitor
+      component: frontend
+  template:
+    metadata:
+      labels:
+        app: network-monitor
+        component: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: network-monitor-frontend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10

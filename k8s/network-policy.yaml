@@ -1,0 +1,78 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: network-monitor-backend-pdb
+  labels:
+    app: network-monitor
+    component: backend
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: network-monitor
+      component: backend
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: network-monitor-frontend-pdb
+  labels:
+    app: network-monitor
+    component: frontend
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: network-monitor
+      component: frontend
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: network-monitor-policy
+  labels:
+    app: network-monitor
+spec:
+  podSelector:
+    matchLabels:
+      app: network-monitor
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow traffic from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 8080
+    # Allow internal communication
+    - from:
+        - podSelector:
+            matchLabels:
+              app: network-monitor
+      ports:
+        - protocol: TCP
+          port: 8080
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+    # Allow external API calls
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443

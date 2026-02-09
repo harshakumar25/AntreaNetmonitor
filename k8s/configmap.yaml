@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: network-monitor-config
+  labels:
+    app: network-monitor
+data:
+  # Backend configuration
+  GO_ENV: "production"
+  LOG_LEVEL: "info"
+  ENABLE_METRICS: "true"
+  METRICS_PORT: "9090"
+  
+  # WebSocket configuration
+  WS_READ_BUFFER_SIZE: "1024"
+  WS_WRITE_BUFFER_SIZE: "1024"
+  WS_PING_INTERVAL: "30s"
+  
+  # Capture configuration
+  CAPTURE_BUFFER_SIZE: "1000"
+  STATS_INTERVAL: "1s"
+  ALERT_CHECK_INTERVAL: "5s"
+  
+  # Frontend nginx configuration
+  NGINX_WORKER_PROCESSES: "auto"
+  NGINX_WORKER_CONNECTIONS: "1024"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: network-monitor-secrets
+  labels:
+    app: network-monitor
+type: Opaque
+stringData:
+  # JWT secret for authentication (generate a strong secret in production)
+  JWT_SECRET: "your-super-secret-jwt-key-change-in-production"
+  
+  # Database credentials (if using external DB)
+  DB_HOST: "localhost"
+  DB_PORT: "5432"
+  DB_USER: "netmonitor"
+  DB_PASSWORD: "change-me-in-production"
+  DB_NAME: "network_monitor"
+  
+  # Redis credentials (if using Redis for caching)
+  REDIS_HOST: "localhost"
+  REDIS_PORT: "6379"
+  REDIS_PASSWORD: ""

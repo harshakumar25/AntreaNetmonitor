@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: network-monitor-backend
+  labels:
+    app: network-monitor
+    component: backend
+spec:
+  type: ClusterIP
+  selector:
+    app: network-monitor
+    component: backend
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: network-monitor-frontend
+  labels:
+    app: network-monitor
+    component: frontend
+spec:
+  type: ClusterIP
+  selector:
+    app: network-monitor
+    component: frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
+---
+# Optional: LoadBalancer service for external access
+apiVersion: v1
+kind: Service
+metadata:
+  name: network-monitor-lb
+  labels:
+    app: network-monitor
+spec:
+  type: LoadBalancer
+  selector:
+    app: network-monitor
+    component: frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
