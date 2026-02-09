@@ -11,10 +11,10 @@ services:
         value: mock
   - type: web
     name: antrea-netmonitor-frontend
-    env: static
+    env: node
     rootDir: frontend
     buildCommand: npm install && npm run build
-    staticPublishPath: dist
+    startCommand: npx serve -s dist -l $PORT
     envVars:
       - key: VITE_API_URL
         value: https://REPLACE_WITH_BACKEND_URL
