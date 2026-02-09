@@ -10,8 +10,8 @@ services:
     envVars:
       - key: CAPTURE_MODE
         value: mock
-staticSites:
-  - name: antrea-netmonitor-frontend
+  - type: web
+    name: antrea-netmonitor-frontend
     env: static
     plan: free
     rootDir: frontend
